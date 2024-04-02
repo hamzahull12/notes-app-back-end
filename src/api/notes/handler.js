@@ -1,18 +1,24 @@
+const ClientError = require('../../exceptions/ClientError');
+
 class NotesHandler {
-  constructor(service) {
+  constructor(service, validator) {
     this._service = service;
+    this._validator = validator;
 
     this.addNoteHandler = this.addNoteHandler.bind(this);
     this.getAllNotesHandler = this.getAllNotesHandler.bind(this);
-    this.getAllNoteByIdHandler = this.getAllNoteByIdHandler.bind(this);
+    this.getNoteByIdHandler = this.getNoteByIdHandler.bind(this);
     this.putNoteByIdHandler = this.putNoteByIdHandler.bind(this);
     this.deleteNoteByIdHandler = this.deleteNoteByIdHandler.bind(this);
   }
 
   addNoteHandler(request, h) {
     try {
+      this._validator.validateNotePayload(request.payload);
+
       const { title = 'untitled', body, tags } = request.payload;
       const noteId = this._service.addNote({ title, body, tags });
+
       const response = h.response({
         status: 'success',
         message: 'Catatan berhasil ditambahkan',
@@ -23,11 +29,18 @@ class NotesHandler {
       response.code(201);
       return response;
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
         status: 'fail',
-        message: error.message,
-      });
-      response.code(400);
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      }).code(500);
       return response;
     }
   }
@@ -42,7 +55,7 @@ class NotesHandler {
     };
   }
 
-  getAllNoteByIdHandler(request, h) {
+  getNoteByIdHandler(request, h) {
     try {
       const { id } = request.params;
       const note = this._service.getNoteById(id);
@@ -53,32 +66,49 @@ class NotesHandler {
         },
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
         status: 'fail',
-        message: error.message,
-      });
-      response.code(404);
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      }).code(500);
       return response;
     }
   }
 
   putNoteByIdHandler(request, h) {
     try {
+      this._validator.validateNotePayload(request.payload);
+
       const { id } = request.params;
-      const { title, tags, body } = request.payload;
-      this._service.editNoteById(id, { title, tags, body });
-      const response = h.response({
+      this._service.editNoteById(id, request.payload);
+      return {
         status: 'success',
         message: 'Catatan berhasil diperbarui',
-      });
-      response.code(200);
-      return response;
+      };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      // Server ERROR!
       const response = h.response({
-        status: 'fail',
-        message: error.message,
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
-      response.code(404);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
@@ -92,11 +122,18 @@ class NotesHandler {
         message: 'Catatan berhasil dihapus',
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
         status: 'fail',
-        message: error.message,
-      });
-      response.code(404);
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      }).code(500);
       return response;
     }
   }

@@ -12,7 +12,7 @@ const routes = (handler) => [
   {
     method: 'GET',
     path: '/notes/{id}',
-    handler: handler.getAllNoteByIdHandler,
+    handler: handler.getNoteByIdHandler,
   },
   {
     method: 'PUT',
