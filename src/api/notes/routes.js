@@ -4,6 +4,26 @@ const routes = (handler) => [
     path: '/notes',
     handler: handler.addNoteHandler,
   },
+  {
+    method: 'GET',
+    path: '/notes',
+    handler: handler.getAllNotesHandler,
+  },
+  {
+    method: 'GET',
+    path: '/notes/{id}',
+    handler: handler.getAllNoteByIdHandler,
+  },
+  {
+    method: 'PUT',
+    path: '/notes/{id}',
+    handler: handler.putNoteByIdHandler,
+  },
+  {
+    method: 'DELETE',
+    path: '/notes/{id}',
+    handler: handler.deleteNoteByIdHandler,
+  },
 ];
 
 module.exports = routes;
