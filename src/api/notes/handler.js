@@ -15,7 +15,6 @@ class NotesHandler {
 
     const { title = 'untitled', body, tags } = request.payload;
     const { id: credentialId } = request.auth.credentials;
-    console.log(credentialId);
     const noteId = await this._service.addNote({
       title, body, tags, owner: credentialId,
     });
