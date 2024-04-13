@@ -16,10 +16,15 @@ const authentications = require('./api/authentications');
 const TokenManager = require('./Tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
 
+const CollaborationsService = require('./services/database/CollaborationsService');
+const collaborations = require('./api/collaborations');
+const CollaborationValidator = require('./validator/collaborations');
+
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
-  const notesService = new NotesService();
+  const collaborationsService = new CollaborationsService();
+  const notesService = new NotesService(collaborationsService);
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const server = Hapi.server({
@@ -76,6 +81,14 @@ const init = async () => {
         usersService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        notesService,
+        validator: CollaborationValidator,
       },
     },
   ]);
